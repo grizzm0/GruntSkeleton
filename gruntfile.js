@@ -10,8 +10,8 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-filerev');
     grunt.loadNpmTasks('grunt-usemin');
 
-    grunt.registerTask('dev', [
-        'less:dev',
+    grunt.registerTask('development', [
+        'less:development',
         'watch'
     ]);
 
@@ -19,26 +19,26 @@ module.exports = function(grunt) {
         'clean:build',
         'less:build',
         'useminPrepare',
-        'concat',
-        'uglify',
-        'copy',
-        'filerev',
+        'concat:generated',
+        'uglify:generated',
+        'copy:build',
+        'filerev:build',
         'usemin',
         'clean:tmp'
     ]);
 
+    grunt.registerTask('deploy', [
+        'build',
+    ]);
+
     grunt.initConfig({
         clean: {
-            build: ['build'],
-            generated: ['src/css'],
+            build: [
+                'build',
+                'build.tgz'
+            ],
+            css: ['src/css'],
             tmp: ['.tmp']
-        },
-
-        concat: {
-            options: {
-                separator: ';'
-            },
-            dist: {}
         },
 
         copy: {
@@ -49,9 +49,8 @@ module.exports = function(grunt) {
 
         filerev: {
             options: {
-                encoding: 'utf8',
-                algorithm: 'md5',
-                length: 20
+                algorithm: 'sha1',
+                length: 10
             },
             build: {
                 files: [{
@@ -64,35 +63,18 @@ module.exports = function(grunt) {
         },
 
         less: {
-            dev: {
-                src: [
-                    'src/less/bootstrap.less',
-                    'src/less/application.less'
-                ],
+            development: {
+                src: 'src/less/application.less',
                 dest: 'src/css/application.css'
             },
             build: {
-                options: {
-                    cleancss: true
-                },
-                src: [
-                    'src/less/bootstrap.less',
-                    'src/less/application.less'
-                ],
+                src: 'src/less/application.less',
                 dest: 'build/css/application.css'
             }
         },
 
-        uglify: {
-            dist: {}
-        },
-
         usemin: {
-            html: ['build/*.html'],
-            css: ['build/css/*.css']
-            /*options: {
-                assetsDirs: ['build', 'build/css']
-            }*/
+            html: ['build/*.html']
         },
 
         useminPrepare: {
@@ -105,7 +87,10 @@ module.exports = function(grunt) {
         watch: {
             less: {
                 files: ['src/less/**/*.less'],
-                tasks: ['less:dev']
+                tasks: [
+                    'clean:css',
+                    'less:development'
+                ]
             }
         }
     });

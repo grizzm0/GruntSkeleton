@@ -4,6 +4,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-contrib-cssmin');
     grunt.loadNpmTasks('grunt-contrib-less');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-watch');
@@ -11,39 +12,44 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-usemin');
 
     grunt.registerTask('development', [
-        'less:development',
+        'less',
         'watch'
     ]);
 
     grunt.registerTask('build', [
         'clean:build',
-        'less:build',
+        'less',
         'useminPrepare',
         'concat:generated',
         'uglify:generated',
+        'cssmin:generated',
         'copy:build',
         'filerev:build',
         'usemin',
         'clean:tmp'
     ]);
 
-    grunt.registerTask('deploy', [
-        'build',
-    ]);
+    /*grunt.registerTask('deploy', [
+     'build',
+     ]);*/
 
     grunt.initConfig({
         clean: {
-            build: [
-                'build',
-                'build.tgz'
-            ],
+            build: ['build'],
             css: ['src/css'],
             tmp: ['.tmp']
         },
 
         copy: {
             build: {
-                files: {'build/index.html': 'src/index.html'}
+                src: 'src/index.html',
+                dest: 'build/index.html'
+            }
+        },
+
+        cssmin: {
+            options: {
+                keepSpecialComments: 0
             }
         },
 
@@ -53,23 +59,23 @@ module.exports = function(grunt) {
                 length: 10
             },
             build: {
-                files: [{
-                    src: [
-                        'build/js/*.js',
-                        'build/css/*.css'
-                    ]
-                }]
+                src: [
+                    'build/js/*.js',
+                    'build/css/*.css'
+                ]
             }
         },
 
         less: {
-            development: {
-                src: 'src/less/application.less',
-                dest: 'src/css/application.css'
-            },
-            build: {
-                src: 'src/less/application.less',
-                dest: 'build/css/application.css'
+            compile: {
+                expand: true,
+                cwd: 'src/less',
+                src: [
+                    '**/*.less',
+                    '!config/*.less'
+                ],
+                ext: '.css',
+                dest: 'src/css'
             }
         },
 
@@ -89,7 +95,7 @@ module.exports = function(grunt) {
                 files: ['src/less/**/*.less'],
                 tasks: [
                     'clean:css',
-                    'less:development'
+                    'less'
                 ]
             }
         }
